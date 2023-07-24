@@ -18,7 +18,7 @@ func Authorize(ctx *gin.Context, storage Storage) {
 		return
 	}
 	// todo
-	if client.GetId() != clientId {
+	if client.GetClientId() != clientId {
 		return
 	}
 	redirectUri := ctx.Params.ByName("redirect_uri")
@@ -30,22 +30,19 @@ func Authorize(ctx *gin.Context, storage Storage) {
 	if !ValidateGrantType(client.GetGrantTypes(), GrantTypeCode) && !ValidateGrantType(client.GetGrantTypes(), GrantTypeImplicit) {
 		return
 	}
-	userName := ctx.Params.ByName("user_name")
-	user := storage.GetUserByUserName(userName)
 	grantType := ctx.Params.ByName("grant_type")
 	if grantType == GrantTypeCode {
-		authCodeInfo, err := storage.GenAuthorizationCode(client, user)
+		code, err := storage.GenAuthorizationCode(client)
 		// todo err
 		if err != nil {
 			return
 		}
-		code := storage.EncryptCode(authCodeInfo)
 		url := fmt.Sprintf("%s?code=%s", client.GetRedirectUri(), code)
 		ctx.Redirect(http.StatusFound, url)
 		return
 	}
 
-	token, err := storage.GenToken(client, user)
+	token, err := storage.GenToken(client)
 	if err != nil {
 		return
 	}

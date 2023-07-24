@@ -1,7 +1,7 @@
 package oidc
 
 type Client interface {
-	GetId() string
+	GetClientId() string
 	GetRedirectUri() string
 	GetGrantTypes() []GrantType
 	GetClientSecret() string

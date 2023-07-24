@@ -1,14 +1,24 @@
 package oidc
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
-	"net/http"
 )
 
+type TokenParams struct {
+	ClientId     string    `json:"client_id" form:"client_id"`
+	ClientSecret string    `json:"client_secret" form:"client_secret"`
+	GrantType    GrantType `json:"grant_type" form:"grant_type"`
+	Code         string    `json:"code" form:"code"`
+}
+
 func AccessTokenByCode(ctx *gin.Context, storage Storage) {
-	clientId := ctx.Params.ByName("client_id")
-	client, err := storage.GetClientByClientId(clientId)
+	p := &TokenParams{}
+	err := ctx.ShouldBindQuery(p)
+	// todo
+	if err != nil {
+		return
+	}
+	client, err := storage.GetClientByClientId(p.ClientId)
 	// todo
 	if client == nil {
 		return
@@ -17,20 +27,19 @@ func AccessTokenByCode(ctx *gin.Context, storage Storage) {
 	if err != nil {
 		return
 	}
-	grantType := ctx.Params.ByName("grant_type")
-	if grantType != GrantTypeCode {
+	if p.GrantType != GrantTypeCode {
 		return
 	}
 	if !ValidateGrantType(client.GetGrantTypes(), GrantTypeCode) {
 		return
 	}
-	code := ctx.Params.ByName("code")
-	autoCodeInfo := storage.DecryptCode(code)
-	if autoCodeInfo.ClientId != clientId {
+	autoCodeInfo := storage.DecodeAuthCode(p.Code)
+	if autoCodeInfo.ClientId == "" || autoCodeInfo.ClientId != client.GetClientId() || p.ClientSecret != client.GetClientSecret() {
 		return
 	}
 	// todo
-	tokenInfo, err := storage.GenToken(client, autoCodeInfo.UserInfo)
-	url := fmt.Sprintf("%s?access_token=%s&token_type=%s&expires_in=%d", client.GetRedirectUri(), tokenInfo.AccessToken, tokenInfo.TokenType, tokenInfo.ExpiresIn)
-	ctx.Redirect(http.StatusFound, url)
+	tokenInfo, err := storage.GenToken(client)
+	// url := fmt.Sprintf("%s?access_token=%s&token_type=%s&expires_in=%d", client.GetRedirectUri(), tokenInfo.AccessToken, tokenInfo.TokenType, tokenInfo.ExpiresIn)
+	//ctx.Redirect(http.StatusFound, url)
+	ctx.JSON(200, tokenInfo)
 }
