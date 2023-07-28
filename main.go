@@ -1,12 +1,15 @@
-package oidc
+package main
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gin-gonic/gin"
+	"oidc/pkg/oidc"
+)
 
-func Init(r *gin.Engine, storage Storage) {
+func Init(r *gin.Engine, storage oidc.Storage) {
 	r.GET("/authorize", func(ctx *gin.Context) {
-		Authorize(ctx, storage)
+		oidc.Authorize(ctx, storage)
 	})
 	r.GET("/token", func(ctx *gin.Context) {
-		AccessTokenByCode(ctx, storage)
+		oidc.Token(ctx, storage)
 	})
 }
