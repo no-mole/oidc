@@ -13,6 +13,7 @@ type Storage interface {
 	GetTokenScopesByUserId(userId string) []string
 	SetUserInfo(info *UserInfo, userId string, scopes []string) error
 	KeySet() ([]Key, error)
+	TerminateSession(clientId, userId string) error
 	UserStorage
 }
 

@@ -9,10 +9,12 @@ import (
 	"github.com/google/uuid"
 	"github.com/square/go-jose/v3"
 	"oidc/pkg/oidc"
+	"sync"
 	"time"
 )
 
 type Storage struct {
+	lock          sync.Mutex
 	clients       map[string]*Client
 	codes         map[string]string
 	tokens        map[string]*Token
@@ -187,6 +189,18 @@ func (s *Storage) GetTokenScopesByUserId(userId string) []string {
 
 func (s *Storage) KeySet() ([]oidc.Key, error) {
 	return []oidc.Key{&s.key}, nil
+}
+
+func (s *Storage) TerminateSession(clientId, userId string) error {
+	s.lock.Lock()
+	defer s.lock.Unlock()
+	for _, token := range s.tokens {
+		if token.ClientId == clientId && token.UserId == userId {
+			delete(s.tokens, userId)
+			delete(s.refreshTokens, userId)
+		}
+	}
+	return nil
 }
 
 func NewStorage(storage UserStorage) *Storage {
