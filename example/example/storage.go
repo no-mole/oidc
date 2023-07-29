@@ -1,17 +1,23 @@
 package example
 
 import (
+	"crypto/rand"
+	"crypto/rsa"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"github.com/google/uuid"
+	"github.com/square/go-jose/v3"
 	"oidc/pkg/oidc"
 	"time"
 )
 
 type Storage struct {
-	clients map[string]*Client
-	codes   map[string]string
-	tokens  map[string]*oidc.TokenInfo
+	clients       map[string]*Client
+	codes         map[string]string
+	tokens        map[string]*Token
+	refreshTokens map[string]*Token
+	key           signKey
 	UserStorage
 }
 
@@ -21,6 +27,7 @@ type Token struct {
 	ClientId  string
 	TokenType string
 	GrantType oidc.GrantType
+	Scopes    []string
 	ExpireIn  int64
 	CreateAt  string
 }
@@ -69,37 +76,42 @@ func (s *Storage) ValidateAuthorizationCode(code, clientId string) bool {
 	return authCodeInfo.ClientId == clientId
 }
 
-func (s *Storage) GenToken(grantType oidc.GrantType, client oidc.Client, userId string, scopes []string, nonce, display, prompt, uiLocales, idTokenHint, loginHint, acrValues string, maxAge int64) (*oidc.TokenInfo, error) {
+func (s *Storage) CreateAccessOrRefreshToken(grantType oidc.GrantType, client oidc.Client, needsRefreshToken bool, userId string, scopes []string) (accessToken, refreshToken string, expiresIn int64, err error) {
 	user := s.UserStorage.GetUserByUserId(userId)
 	if user == nil {
-		return nil, errors.New("user not found")
+		return "", "", 0, errors.New("user not found")
 	}
-	var err error
 	token := &Token{
 		UserId:    userId,
 		Username:  user.Username,
 		ClientId:  client.GetClientId(),
 		GrantType: grantType,
+		Scopes:    scopes,
 		ExpireIn:  3600,
 		CreateAt:  time.Now().Format(time.DateTime),
 	}
-	tokenInfo := &oidc.TokenInfo{
-		TokenType:  string(grantType),
-		ExpiresIn:  3600,
-		CreateTime: time.Now().Format(time.DateTime),
-		Scopes:     scopes,
-	}
+	// accessToken
 	token.TokenType = TokenTypeAccess
-	tokenInfo.AccessToken, err = Encode(token)
+	accessToken, err = Encode(token)
+	s.tokens[userId] = token
 	if err != nil {
-		return nil, err
+		return "", "", 0, err
 	}
-	token.TokenType = TokenTypeRefresh
-	tokenInfo.RefreshToken, err = Encode(token)
-	if err != nil {
-		return nil, err
+	// refreshToken
+	if needsRefreshToken {
+		token.TokenType = TokenTypeRefresh
+		refreshToken, err = Encode(token)
+		s.refreshTokens[userId] = token
+		if err != nil {
+			return "", "", 0, err
+		}
 	}
-	return tokenInfo, nil
+	return accessToken, refreshToken, token.ExpireIn, nil
+}
+
+func (s *Storage) CreateIdToken(client oidc.Client, userId string, nonce, display, prompt, uiLocales, idTokenHint, loginHint, acrValues string, maxAge int64) (idToken string, err error) {
+	// todo
+	return "", nil
 }
 
 func (s *Storage) ValidateAccessToken(accessToken string, client oidc.Client) (bool, error) {
@@ -133,9 +145,13 @@ func (s *Storage) DecodeAccessTokenToUserId(accessToken string) (string, error) 
 	return token.UserId, err
 }
 
-func (s *Storage) SaveToken(userId string, token *oidc.TokenInfo) error {
-	s.tokens[userId] = token
-	return nil
+func (s *Storage) DecodeRefreshToken(refreshToken string) (clientId, userId string, err error) {
+	token := &Token{}
+	err = Decode(refreshToken, token)
+	if err != nil {
+		return "", "", err
+	}
+	return token.ClientId, token.UserId, nil
 }
 
 func (s *Storage) SetUserInfo(info *oidc.UserInfo, userId string, scopes []string) error {
@@ -165,11 +181,16 @@ func (s *Storage) SetUserInfo(info *oidc.UserInfo, userId string, scopes []strin
 	return nil
 }
 
-func (s *Storage) GetTokenByUserId(userId string) *oidc.TokenInfo {
-	return s.tokens[userId]
+func (s *Storage) GetTokenScopesByUserId(userId string) []string {
+	return s.tokens[userId].Scopes
+}
+
+func (s *Storage) KeySet() ([]oidc.Key, error) {
+	return []oidc.Key{&s.key}, nil
 }
 
 func NewStorage(storage UserStorage) *Storage {
+	rasKey, _ := rsa.GenerateKey(rand.Reader, 2048)
 	return &Storage{
 		clients: map[string]*Client{
 			"test": {
@@ -180,8 +201,14 @@ func NewStorage(storage UserStorage) *Storage {
 				isDisabled:  false,
 			},
 		},
-		codes:       make(map[string]string),
-		tokens:      make(map[string]*oidc.TokenInfo),
-		UserStorage: storage,
+		codes:         make(map[string]string),
+		tokens:        make(map[string]*Token),
+		refreshTokens: make(map[string]*Token),
+		UserStorage:   storage,
+		key: signKey{
+			id:        uuid.NewString(),
+			algorithm: jose.RS256,
+			key:       rasKey,
+		},
 	}
 }

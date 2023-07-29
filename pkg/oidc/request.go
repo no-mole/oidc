@@ -1,6 +1,9 @@
 package oidc
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
 type GrantType string
 
@@ -18,6 +21,7 @@ const (
 	GrantTypeImplicit          = "implicit"           // 隐式模式
 	GrantTypePassword          = "password"           // 资源所有者密码凭证许可
 	GrantTypeClientCredentials = "client_credentials" // 客户端凭据许可
+	GrantTypeRefreshToken      = "refresh_token"      // 刷新令牌
 )
 
 func AuthErrorResponseURL(redirectUri string, grantType GrantType, errType, errorDescription string) string {
@@ -35,3 +39,14 @@ const (
 
 	ScopePhone = "phone"
 )
+
+func ValidateClient(clientId, redirectUri string, storage Storage) (Client, error) {
+	client := storage.GetClientByClientId(clientId)
+	if client == nil || client.GetClientId() != clientId {
+		return nil, errors.New(ErrorInvalidRequest)
+	}
+	if client.GetRedirectUri() != redirectUri {
+		return nil, errors.New(ErrorInvalidRequest)
+	}
+	return client, nil
+}

@@ -7,44 +7,25 @@ import (
 	"strings"
 )
 
-type GetUserInfoParams struct {
-	ClientId string `json:"client_id" form:"client_id"`
-}
-
 func GetUserInfo(ctx *gin.Context, storage Storage) {
-	p := &GetUserInfoParams{}
-	err := ctx.ShouldBindQuery(p)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, ErrorInvalidRequest)
-		return
-	}
-	client := storage.GetClientByClientId(p.ClientId)
-	if client == nil || client.GetClientId() != p.ClientId {
-		ctx.Redirect(http.StatusFound, AuthErrorResponseURL(client.GetRedirectUri(), "", ErrorUnauthorizedClient, err.Error()))
-		return
-	}
 	accessToken, err := getAccessToken(ctx)
 	if err != nil {
-		ctx.Redirect(http.StatusFound, AuthErrorResponseURL(client.GetRedirectUri(), "", ErrorUnauthorizedClient, ""))
-		return
-	}
-	if ok, err := storage.ValidateAccessToken(accessToken, client); !ok || err != nil {
-		ctx.Redirect(http.StatusFound, AuthErrorResponseURL(client.GetRedirectUri(), "", ErrorAccessDenied, ""))
+		ctx.JSON(http.StatusForbidden, err)
 		return
 	}
 	userId, err := storage.DecodeAccessTokenToUserId(accessToken)
 	if err != nil {
-		ctx.Redirect(http.StatusFound, AuthErrorResponseURL(client.GetRedirectUri(), "", ErrorServer, ""))
+		ctx.JSON(http.StatusForbidden, err)
 		return
 	}
-	token := storage.GetTokenByUserId(userId)
+	scopes := storage.GetTokenScopesByUserId(userId)
 	userInfo := &UserInfo{}
-	err = storage.SetUserInfo(userInfo, userId, token.Scopes)
+	err = storage.SetUserInfo(userInfo, userId, scopes)
 	if err != nil {
-		ctx.Redirect(http.StatusFound, AuthErrorResponseURL(client.GetRedirectUri(), "", ErrorServer, ""))
+		ctx.JSON(http.StatusForbidden, err)
 		return
 	}
-	ctx.JSON(200, userInfo)
+	ctx.JSON(http.StatusOK, userInfo)
 }
 
 func getAccessToken(ctx *gin.Context) (string, error) {
