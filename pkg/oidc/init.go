@@ -18,4 +18,7 @@ func Init(r *gin.Engine, storage Storage) {
 	r.GET("/keys", func(ctx *gin.Context) {
 		Keys(ctx, storage)
 	})
+	r.POST("/end_session", func(ctx *gin.Context) {
+		EndSession(ctx, storage)
+	})
 }

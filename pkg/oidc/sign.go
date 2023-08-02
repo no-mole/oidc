@@ -1,12 +1,8 @@
 package oidc
 
-import (
-	"github.com/square/go-jose/v3"
-)
-
 type Key interface {
 	ID() string
-	Algorithm() jose.SignatureAlgorithm
+	Algorithm() string
 	Use() string
 	Key() interface{}
 }

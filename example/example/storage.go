@@ -6,8 +6,8 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
-	"github.com/square/go-jose/v3"
 	"oidc/pkg/oidc"
 	"sync"
 	"time"
@@ -111,9 +111,16 @@ func (s *Storage) CreateAccessOrRefreshToken(grantType oidc.GrantType, client oi
 	return accessToken, refreshToken, token.ExpireIn, nil
 }
 
-func (s *Storage) CreateIdToken(client oidc.Client, userId string, nonce, display, prompt, uiLocales, idTokenHint, loginHint, acrValues string, maxAge int64) (idToken string, err error) {
-	// todo
-	return "", nil
+func (s *Storage) CreateIdToken(claims *oidc.IdTokenClaims) (string, error) {
+	return s.key.Encrypt(claims)
+}
+
+func (s *Storage) DecodeIdToken(idToken string) (claims *oidc.IdTokenClaims, err error) {
+	idc, err := s.key.Decrypt(idToken)
+	if err != nil {
+		return nil, err
+	}
+	return idc.IdTokenClaims, nil
 }
 
 func (s *Storage) ValidateAccessToken(accessToken string, client oidc.Client) (bool, error) {
@@ -221,7 +228,7 @@ func NewStorage(storage UserStorage) *Storage {
 		UserStorage:   storage,
 		key: signKey{
 			id:        uuid.NewString(),
-			algorithm: jose.RS256,
+			algorithm: jwt.SigningMethodRS256.Alg(),
 			key:       rasKey,
 		},
 	}

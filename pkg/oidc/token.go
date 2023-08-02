@@ -8,6 +8,7 @@ import (
 )
 
 type TokenParams struct {
+	Issuer       string    `json:"issuer" form:"issuer"`
 	ClientId     string    `json:"client_id" form:"client_id"`
 	ClientSecret string    `json:"client_secret" form:"client_secret"`
 	RedirectUri  string    `json:"redirect_uri" form:"redirect_uri"`
@@ -19,18 +20,13 @@ type TokenParams struct {
 	Username     string    `json:"username" form:"username"`
 	Password     string    `json:"password" form:"password"`
 	Nonce        string    `json:"nonce" form:"nonce"`
-	Display      string    `json:"display" form:"display"`
-	Prompt       string    `json:"prompt" form:"prompt"`
-	UiLocales    string    `json:"ui_locales" form:"ui_locales"`
-	IdTokenHint  string    `json:"id_token_hint" form:"id_token_hint"`
-	LoginHint    string    `json:"login_hint" form:"login_hint"`
 	AcrValues    string    `json:"acr_values" form:"acr_values"`
-	MaxAge       int64     `json:"max_age" form:"max_age"`
+	Amr          []string  `json:"amr" form:"amr"`
 }
 
 func Token(ctx *gin.Context, storage Storage) {
 	p := &TokenParams{}
-	err := ctx.ShouldBindQuery(p)
+	err := ctx.ShouldBindJSON(p)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, ErrorInvalidRequest)
 		return

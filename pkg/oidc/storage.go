@@ -5,7 +5,8 @@ type Storage interface {
 	GenAuthorizationCode(client Client, userId string) (string, error)
 	DecodeAuthCode(code string) (*AuthCodeInfo, error)
 	ValidateAuthorizationCode(code, clientId string) bool
-	CreateIdToken(client Client, userId string, nonce, display, prompt, uiLocales, idTokenHint, loginHint, acrValues string, maxAge int64) (idToken string, err error)
+	CreateIdToken(claims *IdTokenClaims) (idToken string, err error)
+	DecodeIdToken(idToken string) (claims *IdTokenClaims, err error)
 	CreateAccessOrRefreshToken(grantType GrantType, client Client, needsRefreshToken bool, userId string, scopes []string) (accessToken, refreshToken string, expiresIn int64, err error)
 	DecodeRefreshToken(refreshToken string) (clientId, userId string, err error)
 	DecodeAccessTokenToUserId(accessToken string) (string, error)
