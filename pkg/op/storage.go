@@ -1,4 +1,4 @@
-package oidc
+package op
 
 type Storage interface {
 	GetClientByClientId(clientId string) Client

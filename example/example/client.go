@@ -1,12 +1,12 @@
 package example
 
-import "oidc/pkg/oidc"
+import "oidc/pkg/op"
 
 type Client struct {
 	id          string
 	secret      string
 	redirectUri string
-	grantTypes  []oidc.GrantType
+	grantTypes  []op.GrantType
 	isDisabled  bool
 }
 
@@ -22,7 +22,7 @@ func (c *Client) GetIsDisabled() bool {
 	return c.isDisabled
 }
 
-func (c *Client) GetGrantTypes() []oidc.GrantType {
+func (c *Client) GetGrantTypes() []op.GrantType {
 	return c.grantTypes
 }
 

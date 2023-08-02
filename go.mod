@@ -7,7 +7,6 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.0.0
 	github.com/google/uuid v1.3.0
 	github.com/square/go-jose/v3 v3.0.0-20200630053402-0a67ce9b0693
-	gopkg.in/square/go-jose.v2 v2.6.0
 )
 
 require (

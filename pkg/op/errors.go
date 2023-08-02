@@ -1,4 +1,4 @@
-package oidc
+package op
 
 const (
 	ErrorInvalidRequest          = "invalid_request"           // 请求缺少必需的参数、包含无效的参数值、包含重复参数或格式不正确。
