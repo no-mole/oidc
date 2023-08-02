@@ -2,14 +2,14 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
-	"oidc/pkg/op"
+	"oidc/pkg/oidc"
 )
 
-func Init(r *gin.Engine, storage op.Storage) {
+func Init(r *gin.Engine, storage oidc.Storage) {
 	r.GET("/authorize", func(ctx *gin.Context) {
-		op.Authorize(ctx, storage)
+		oidc.Authorize(ctx, storage)
 	})
 	r.GET("/token", func(ctx *gin.Context) {
-		op.Token(ctx, storage)
+		oidc.Token(ctx, storage)
 	})
 }

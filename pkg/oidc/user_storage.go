@@ -1,4 +1,4 @@
-package op
+package oidc
 
 type UserInfo struct {
 	Subject string `json:"sub"`

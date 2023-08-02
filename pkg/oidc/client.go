@@ -1,4 +1,4 @@
-package op
+package oidc
 
 type Client interface {
 	GetClientId() string

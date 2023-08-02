@@ -3,7 +3,7 @@ package example
 import (
 	"crypto/rsa"
 	"github.com/golang-jwt/jwt/v5"
-	"oidc/pkg/op"
+	"oidc/pkg/oidc"
 )
 
 type signKey struct {
@@ -29,11 +29,11 @@ func (s *signKey) Key() interface{} {
 }
 
 type idTokenClaims struct {
-	*op.IdTokenClaims
+	*oidc.IdTokenClaims
 	jwt.RegisteredClaims
 }
 
-func (s *signKey) Encrypt(p *op.IdTokenClaims) (string, error) {
+func (s *signKey) Encrypt(p *oidc.IdTokenClaims) (string, error) {
 	claims := &idTokenClaims{p, jwt.RegisteredClaims{
 		ExpiresAt: jwt.NewNumericDate(p.Expiration),
 		NotBefore: nil,

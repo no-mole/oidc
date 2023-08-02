@@ -8,7 +8,7 @@ import (
 	"errors"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
-	"oidc/pkg/op"
+	"oidc/pkg/oidc"
 	"sync"
 	"time"
 )
@@ -28,7 +28,7 @@ type Token struct {
 	Username  string
 	ClientId  string
 	TokenType string
-	GrantType op.GrantType
+	GrantType oidc.GrantType
 	Scopes    []string
 	ExpireIn  int64
 	CreateAt  string
@@ -39,12 +39,12 @@ const (
 	TokenTypeRefresh = "refresh_token"
 )
 
-func (s *Storage) GetClientByClientId(clientId string) op.Client {
+func (s *Storage) GetClientByClientId(clientId string) oidc.Client {
 	return s.clients[clientId]
 }
 
-func (s *Storage) GenAuthorizationCode(client op.Client, userId string) (string, error) {
-	authCodeInfo := &op.AuthCodeInfo{
+func (s *Storage) GenAuthorizationCode(client oidc.Client, userId string) (string, error) {
+	authCodeInfo := &oidc.AuthCodeInfo{
 		ClientId:   client.GetClientId(),
 		UserId:     userId,
 		ExpiresIn:  3600,
@@ -57,12 +57,12 @@ func (s *Storage) GenAuthorizationCode(client op.Client, userId string) (string,
 	return base64.RawURLEncoding.EncodeToString(data), nil
 }
 
-func (s *Storage) DecodeAuthCode(code string) (*op.AuthCodeInfo, error) {
+func (s *Storage) DecodeAuthCode(code string) (*oidc.AuthCodeInfo, error) {
 	data, err := base64.RawURLEncoding.DecodeString(code)
 	if err != nil {
 		return nil, err
 	}
-	authCodeInfo := &op.AuthCodeInfo{}
+	authCodeInfo := &oidc.AuthCodeInfo{}
 	err = json.Unmarshal(data, authCodeInfo)
 	if err != nil {
 		return nil, err
@@ -78,7 +78,7 @@ func (s *Storage) ValidateAuthorizationCode(code, clientId string) bool {
 	return authCodeInfo.ClientId == clientId
 }
 
-func (s *Storage) CreateAccessOrRefreshToken(grantType op.GrantType, client op.Client, needsRefreshToken bool, userId string, scopes []string) (accessToken, refreshToken string, expiresIn int64, err error) {
+func (s *Storage) CreateAccessOrRefreshToken(grantType oidc.GrantType, client oidc.Client, needsRefreshToken bool, userId string, scopes []string) (accessToken, refreshToken string, expiresIn int64, err error) {
 	user := s.UserStorage.GetUserByUserId(userId)
 	if user == nil {
 		return "", "", 0, errors.New("user not found")
@@ -111,11 +111,11 @@ func (s *Storage) CreateAccessOrRefreshToken(grantType op.GrantType, client op.C
 	return accessToken, refreshToken, token.ExpireIn, nil
 }
 
-func (s *Storage) CreateIdToken(claims *op.IdTokenClaims) (string, error) {
+func (s *Storage) CreateIdToken(claims *oidc.IdTokenClaims) (string, error) {
 	return s.key.Encrypt(claims)
 }
 
-func (s *Storage) DecodeIdToken(idToken string) (claims *op.IdTokenClaims, err error) {
+func (s *Storage) DecodeIdToken(idToken string) (claims *oidc.IdTokenClaims, err error) {
 	idc, err := s.key.Decrypt(idToken)
 	if err != nil {
 		return nil, err
@@ -123,7 +123,7 @@ func (s *Storage) DecodeIdToken(idToken string) (claims *op.IdTokenClaims, err e
 	return idc.IdTokenClaims, nil
 }
 
-func (s *Storage) ValidateAccessToken(accessToken string, client op.Client) (bool, error) {
+func (s *Storage) ValidateAccessToken(accessToken string, client oidc.Client) (bool, error) {
 	token := &Token{}
 	err := Decode(accessToken, token)
 	if err != nil {
@@ -163,25 +163,25 @@ func (s *Storage) DecodeRefreshToken(refreshToken string) (clientId, userId stri
 	return token.ClientId, token.UserId, nil
 }
 
-func (s *Storage) SetUserInfo(info *op.UserInfo, userId string, scopes []string) error {
+func (s *Storage) SetUserInfo(info *oidc.UserInfo, userId string, scopes []string) error {
 	user := s.UserStorage.GetUserByUserId(userId)
 	if user == nil {
 		return errors.New("user not found")
 	}
 	for _, scope := range scopes {
 		switch scope {
-		case op.ScopeOpenID:
+		case oidc.ScopeOpenID:
 			info.Subject = user.ID
-		case op.ScopeEmail:
+		case oidc.ScopeEmail:
 			info.Email = user.Email
 			info.EmailVerified = user.EmailVerified
-		case op.ScopeProfile:
+		case oidc.ScopeProfile:
 			info.PreferredUsername = user.Username
 			info.Name = user.FirstName + " " + user.LastName
 			info.FamilyName = user.LastName
 			info.GivenName = user.FirstName
 			info.Locale = user.PreferredLanguage
-		case op.ScopePhone:
+		case oidc.ScopePhone:
 			info.PhoneNumber = user.Phone
 			info.PhoneNumberVerified = user.PhoneVerified
 		}
@@ -194,8 +194,8 @@ func (s *Storage) GetTokenScopesByUserId(userId string) []string {
 	return s.tokens[userId].Scopes
 }
 
-func (s *Storage) KeySet() ([]op.Key, error) {
-	return []op.Key{&s.key}, nil
+func (s *Storage) KeySet() ([]oidc.Key, error) {
+	return []oidc.Key{&s.key}, nil
 }
 
 func (s *Storage) TerminateSession(clientId, userId string) error {
@@ -218,7 +218,7 @@ func NewStorage(storage UserStorage) *Storage {
 				id:          "test",
 				secret:      "testsecret",
 				redirectUri: "http://localhost:9998/hello",
-				grantTypes:  []op.GrantType{op.GrantTypeCode, op.GrantTypeImplicit, op.GrantTypePassword},
+				grantTypes:  []oidc.GrantType{oidc.GrantTypeCode, oidc.GrantTypeImplicit, oidc.GrantTypePassword},
 				isDisabled:  false,
 			},
 		},

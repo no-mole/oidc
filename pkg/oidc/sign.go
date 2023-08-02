@@ -1,4 +1,4 @@
-package op
+package oidc
 
 type Key interface {
 	ID() string
