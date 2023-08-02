@@ -2,7 +2,13 @@ module oidc
 
 go 1.20
 
-require github.com/gin-gonic/gin v1.9.1
+require (
+	github.com/gin-gonic/gin v1.9.1
+	github.com/golang-jwt/jwt/v5 v5.0.0
+	github.com/google/uuid v1.3.0
+	github.com/square/go-jose/v3 v3.0.0-20200630053402-0a67ce9b0693
+	gopkg.in/square/go-jose.v2 v2.6.0
+)
 
 require (
 	github.com/bytedance/sonic v1.9.1 // indirect
@@ -24,10 +30,10 @@ require (
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.11 // indirect
 	golang.org/x/arch v0.3.0 // indirect
-	golang.org/x/crypto v0.9.0 // indirect
+	golang.org/x/crypto v0.11.0 // indirect
 	golang.org/x/net v0.10.0 // indirect
-	golang.org/x/sys v0.8.0 // indirect
-	golang.org/x/text v0.9.0 // indirect
+	golang.org/x/sys v0.10.0 // indirect
+	golang.org/x/text v0.11.0 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	google.golang.org/protobuf v1.30.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect

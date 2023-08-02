@@ -5,23 +5,17 @@ type Storage interface {
 	GenAuthorizationCode(client Client, userId string) (string, error)
 	DecodeAuthCode(code string) (*AuthCodeInfo, error)
 	ValidateAuthorizationCode(code, clientId string) bool
-	GenToken(grantType GrantType, client Client, userId string, scopes []string, nonce, display, prompt, uiLocales, idTokenHint, loginHint, acrValues string, maxAge int64) (*TokenInfo, error)
+	CreateIdToken(claims *IdTokenClaims) (idToken string, err error)
+	DecodeIdToken(idToken string) (claims *IdTokenClaims, err error)
+	CreateAccessOrRefreshToken(grantType GrantType, client Client, needsRefreshToken bool, userId string, scopes []string) (accessToken, refreshToken string, expiresIn int64, err error)
+	DecodeRefreshToken(refreshToken string) (clientId, userId string, err error)
 	DecodeAccessTokenToUserId(accessToken string) (string, error)
 	ValidateAccessToken(accessToken string, client Client) (bool, error)
-	SaveToken(userId string, token *TokenInfo) error
-	GetTokenByUserId(userId string) *TokenInfo
+	GetTokenScopesByUserId(userId string) []string
 	SetUserInfo(info *UserInfo, userId string, scopes []string) error
+	KeySet() ([]Key, error)
+	TerminateSession(clientId, userId string) error
 	UserStorage
-}
-
-type TokenInfo struct {
-	TokenType    string   `json:"token_type"`
-	AccessToken  string   `json:"access_token"`
-	IdToken      string   `json:"id_token"`
-	RefreshToken string   `json:"refresh_token"`
-	ExpiresIn    int64    `json:"expires_in"`
-	Scopes       []string `json:"scopes"`
-	CreateTime   string   `json:"create_time"`
 }
 
 type AuthCodeInfo struct {
