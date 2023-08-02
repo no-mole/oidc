@@ -70,6 +70,11 @@ func (s *Storage) DecodeAuthCode(code string) (*oidc.AuthCodeInfo, error) {
 	return authCodeInfo, nil
 }
 
+func (s *Storage) CheckLogin(userId, state string) bool {
+	// todo impl
+	return false
+}
+
 func (s *Storage) ValidateAuthorizationCode(code, clientId string) bool {
 	authCodeInfo, err := s.DecodeAuthCode(code)
 	if err != nil {
