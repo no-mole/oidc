@@ -18,13 +18,13 @@ type UserStorage struct {
 	users map[string]*User
 }
 
-func (u *UserStorage) GetPassword(username string) string {
+func (u *UserStorage) CheckUserPassword(username, password string) bool {
 	for name, user := range u.users {
 		if name == username {
-			return user.Password
+			return user.Password == password
 		}
 	}
-	return ""
+	return false
 }
 
 func (u *UserStorage) GetUserByUserId(userId string) *User {
