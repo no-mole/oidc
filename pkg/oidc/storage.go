@@ -3,7 +3,7 @@ package oidc
 type Storage interface {
 	GetClientByClientId(clientId string) Client
 	GenAuthorizationCode(client Client, userId string) (string, error)
-	DecodeAuthCode(code string) (*AuthCodeInfo, error)
+	DecodeAuthCode(clientId, code string) (*AuthCodeInfo, error)
 	CheckLogin(clientId, requestId string) bool
 	ValidateAuthorizationCode(code, clientId string) bool
 	CreateIdToken(claims *IdTokenClaims) (idToken string, err error)

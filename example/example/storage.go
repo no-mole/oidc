@@ -57,7 +57,7 @@ func (s *Storage) GenAuthorizationCode(client oidc.Client, userId string) (strin
 	return base64.RawURLEncoding.EncodeToString(data), nil
 }
 
-func (s *Storage) DecodeAuthCode(code string) (*oidc.AuthCodeInfo, error) {
+func (s *Storage) DecodeAuthCode(clientId, code string) (*oidc.AuthCodeInfo, error) {
 	data, err := base64.RawURLEncoding.DecodeString(code)
 	if err != nil {
 		return nil, err
@@ -76,7 +76,7 @@ func (s *Storage) CheckLogin(clientId, requestId string) bool {
 }
 
 func (s *Storage) ValidateAuthorizationCode(code, clientId string) bool {
-	authCodeInfo, err := s.DecodeAuthCode(code)
+	authCodeInfo, err := s.DecodeAuthCode(clientId, code)
 	if err != nil {
 		return false
 	}
