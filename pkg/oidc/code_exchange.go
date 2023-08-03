@@ -12,7 +12,7 @@ func CodeExchange(ctx *gin.Context, p *TokenParams, client Client, storage Stora
 		ctx.Redirect(http.StatusFound, AuthErrorResponseURL(client.GetRedirectUri(), GrantTypeCode, ErrorUnsupportedResponseType, fmt.Sprintf("client missing grant type %s", GrantTypeCode)))
 		return
 	}
-	autoCodeInfo, err := storage.DecodeAuthCode(p.Code)
+	autoCodeInfo, err := storage.DecodeAuthCode(client.GetClientId(), p.Code)
 	if err != nil {
 		ctx.Redirect(http.StatusFound, AuthErrorResponseURL(client.GetRedirectUri(), GrantTypeCode, ErrorInvalidRequest, fmt.Sprintf("%s format error", p.Code)))
 		return
