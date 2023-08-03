@@ -47,5 +47,5 @@ type UserInfoAddress struct {
 }
 
 type UserStorage interface {
-	GetPassword(username string) string
+	CheckUserPassword(username, password string) bool
 }
