@@ -1,4 +1,4 @@
-module oidc
+module github.com/no-mole/oidc
 
 go 1.20
 
