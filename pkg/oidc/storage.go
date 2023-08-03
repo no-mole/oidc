@@ -4,7 +4,7 @@ type Storage interface {
 	GetClientByClientId(clientId string) Client
 	GenAuthorizationCode(client Client, userId string) (string, error)
 	DecodeAuthCode(code string) (*AuthCodeInfo, error)
-	CheckLogin(userId, state string) bool
+	CheckLogin(clientId, requestId string) bool
 	ValidateAuthorizationCode(code, clientId string) bool
 	CreateIdToken(claims *IdTokenClaims) (idToken string, err error)
 	DecodeIdToken(idToken string) (claims *IdTokenClaims, err error)
