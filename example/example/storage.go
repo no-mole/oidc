@@ -8,7 +8,7 @@ import (
 	"errors"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
-	"oidc/pkg/oidc"
+	"github.com/no-mole/oidc/pkg/oidc"
 	"sync"
 	"time"
 )

@@ -4,7 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"oidc/pkg/crypto"
+	"github.com/no-mole/oidc/pkg/crypto"
 )
 
 var key = []byte("test")

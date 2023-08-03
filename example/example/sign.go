@@ -3,7 +3,7 @@ package example
 import (
 	"crypto/rsa"
 	"github.com/golang-jwt/jwt/v5"
-	"oidc/pkg/oidc"
+	"github.com/no-mole/oidc/pkg/oidc"
 )
 
 type signKey struct {
