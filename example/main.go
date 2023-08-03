@@ -2,8 +2,8 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
-	"oidc/example/example"
-	"oidc/pkg/oidc"
+	"github.com/no-mole/oidc/example/example"
+	"github.com/no-mole/oidc/pkg/oidc"
 )
 
 func main() {
