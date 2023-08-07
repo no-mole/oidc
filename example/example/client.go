@@ -1,6 +1,6 @@
 package example
 
-import "oidc/pkg/oidc"
+import "github.com/no-mole/oidc/pkg/oidc"
 
 type Client struct {
 	id          string
