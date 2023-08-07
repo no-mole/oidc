@@ -13,6 +13,7 @@ type AuthorizeParams struct {
 	GrantType   GrantType `json:"grant_type" form:"grant_type"`
 	Scopes      string    `json:"scopes" form:"scopes"`
 	State       string    `json:"state" form:"state"`
+	RequestId   string    `json:"request_id" form:"request_id"`
 }
 
 func Authorize(ctx *gin.Context, storage Storage) {
@@ -27,7 +28,7 @@ func Authorize(ctx *gin.Context, storage Storage) {
 		ctx.Redirect(http.StatusFound, AuthErrorResponseURL(client.GetRedirectUri(), p.GrantType, ErrorInvalidRequest, err.Error()))
 		return
 	}
-	if !storage.CheckLogin(p.UserId, p.State) {
+	if !storage.CheckLogin(p.ClientId, p.RequestId) {
 		// todo
 		ctx.Redirect(http.StatusFound, AuthErrorResponseURL(client.GetRedirectUri(), p.GrantType, ErrorInvalidRequest, err.Error()))
 		return
