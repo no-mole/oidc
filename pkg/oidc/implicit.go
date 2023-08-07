@@ -16,7 +16,7 @@ func Implicit(ctx *gin.Context, p *AuthorizeParams, client Client, storage Stora
 		ctx.Redirect(http.StatusFound, AuthErrorResponseURL(client.GetRedirectUri(), GrantTypeImplicit, ErrorInvalidScope, "scopes not found"))
 		return
 	}
-	scopes := strings.Split(p.Scopes, ",")
+	scopes := strings.Split(p.Scopes, " ")
 	accessToken, _, expiresIn, err := storage.CreateAccessOrRefreshToken(GrantTypeImplicit, client, false, p.UserId, scopes)
 	if err != nil {
 		ctx.Redirect(http.StatusFound, AuthErrorResponseURL(client.GetRedirectUri(), GrantTypeImplicit, ErrorServer, err.Error()))

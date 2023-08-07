@@ -40,7 +40,7 @@ func Token(ctx *gin.Context, storage Storage) {
 		ctx.Redirect(http.StatusFound, AuthErrorResponseURL(client.GetRedirectUri(), GrantTypeCode, ErrorInvalidScope, err.Error()))
 		return
 	}
-	scopes := strings.Split(p.Scopes, ",")
+	scopes := strings.Split(p.Scopes, " ")
 	switch p.GrantType {
 	case GrantTypeCode:
 		CodeExchange(ctx, p, client, storage, scopes)

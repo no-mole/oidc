@@ -31,7 +31,7 @@ func CreateIdToken(storage Storage, client Client, p *TokenParams) (string, erro
 	userInfo := &UserInfo{}
 	var scopes []string
 	if p.Scopes != "" {
-		scopes = strings.Split(p.Scopes, ",")
+		scopes = strings.Split(p.Scopes, " ")
 	}
 	err := storage.SetUserInfo(userInfo, p.UserId, scopes)
 	if err != nil {
