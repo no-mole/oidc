@@ -33,11 +33,11 @@ func Token(ctx *gin.Context, storage Storage) {
 	}
 	client, err := ValidateClient(p.ClientId, p.RedirectUri, storage)
 	if err != nil {
-		ctx.Redirect(http.StatusFound, AuthErrorResponseURL(client.GetRedirectUri(), p.GrantType, ErrorInvalidRequest, err.Error()))
+		ctx.Redirect(http.StatusFound, AuthErrorResponseURL(p.RedirectUri, p.GrantType, ErrorInvalidRequest, err.Error()))
 		return
 	}
 	if p.Scopes == "" {
-		ctx.Redirect(http.StatusFound, AuthErrorResponseURL(client.GetRedirectUri(), GrantTypeCode, ErrorInvalidScope, err.Error()))
+		ctx.Redirect(http.StatusFound, AuthErrorResponseURL(p.RedirectUri, GrantTypeCode, ErrorInvalidScope, err.Error()))
 		return
 	}
 	scopes := strings.Split(p.Scopes, " ")
@@ -55,5 +55,5 @@ func Token(ctx *gin.Context, storage Storage) {
 		RefreshToken(ctx, p, client, storage, scopes)
 		return
 	}
-	ctx.Redirect(http.StatusFound, AuthErrorResponseURL(client.GetRedirectUri(), p.GrantType, ErrorInvalidRequest, fmt.Sprintf("%s not supported", p.GrantType)))
+	ctx.Redirect(http.StatusFound, AuthErrorResponseURL(p.RedirectUri, p.GrantType, ErrorInvalidRequest, fmt.Sprintf("%s not supported", p.GrantType)))
 }

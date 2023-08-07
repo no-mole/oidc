@@ -25,11 +25,11 @@ func Authorize(ctx *gin.Context, storage Storage) {
 	}
 	client, err := ValidateClient(p.ClientId, p.RedirectUri, storage)
 	if err != nil {
-		ctx.Redirect(http.StatusFound, AuthErrorResponseURL(client.GetRedirectUri(), p.GrantType, ErrorInvalidRequest, err.Error()))
+		ctx.Redirect(http.StatusFound, AuthErrorResponseURL(p.RedirectUri, p.GrantType, ErrorInvalidRequest, err.Error()))
 		return
 	}
 	if !storage.CheckLogin(p.ClientId, p.RequestId) {
-		ctx.Redirect(http.StatusFound, AuthErrorResponseURL(client.GetRedirectUri(), p.GrantType, ErrorInvalidRequest, "user login failed"))
+		ctx.Redirect(http.StatusFound, AuthErrorResponseURL(p.RedirectUri, p.GrantType, ErrorInvalidRequest, "user login failed"))
 		return
 	}
 	switch p.GrantType {
