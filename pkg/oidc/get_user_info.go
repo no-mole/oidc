@@ -29,7 +29,7 @@ func GetUserInfo(ctx *gin.Context, storage Storage) {
 }
 
 func getAccessToken(ctx *gin.Context) (string, error) {
-	authHeader := ctx.GetHeader("authorization")
+	authHeader := ctx.GetHeader("Authorization")
 	if authHeader == "" {
 		return "", errors.New("no auth header")
 	}

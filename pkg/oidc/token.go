@@ -36,8 +36,12 @@ func Token(ctx *gin.Context, storage Storage) {
 		ctx.Redirect(http.StatusFound, AuthErrorResponseURL(p.RedirectUri, p.GrantType, ErrorInvalidRequest, err.Error()))
 		return
 	}
+	if !ValidateClientSecret(ctx, client.GetClientSecret()) {
+		ctx.Redirect(http.StatusFound, AuthErrorResponseURL(p.RedirectUri, p.GrantType, ErrorAccessDenied, "client secret not match"))
+		return
+	}
 	if p.Scopes == "" {
-		ctx.Redirect(http.StatusFound, AuthErrorResponseURL(p.RedirectUri, GrantTypeCode, ErrorInvalidScope, err.Error()))
+		ctx.Redirect(http.StatusFound, AuthErrorResponseURL(p.RedirectUri, p.GrantType, ErrorInvalidScope, ErrorInvalidScope))
 		return
 	}
 	scopes := strings.Split(p.Scopes, " ")

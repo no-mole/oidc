@@ -3,6 +3,8 @@ package oidc
 import (
 	"errors"
 	"fmt"
+	"github.com/gin-gonic/gin"
+	"strings"
 )
 
 type GrantType string
@@ -49,4 +51,16 @@ func ValidateClient(clientId, redirectUri string, storage Storage) (Client, erro
 		return nil, errors.New(ErrorInvalidRequest)
 	}
 	return client, nil
+}
+
+func ValidateClientSecret(ctx *gin.Context, clientSecret string) bool {
+	authHeader := ctx.GetHeader("Authorization")
+	if authHeader == "" {
+		return false
+	}
+	parts := strings.Split(authHeader, "Basic ")
+	if len(parts) != 2 {
+		return false
+	}
+	return parts[1] == clientSecret
 }
